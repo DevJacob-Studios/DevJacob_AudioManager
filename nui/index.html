@@ -1,0 +1,139 @@
+<html>
+    <head>
+        <!-- <script src="nui://game/ui/jquery.js" type="text/javascript"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js" type="text/javascript"></script>
+        <script>
+            const DEFAULT_OPTIONS = {
+                volume: 1.0,
+                loop: false,
+                rate: 1.0,
+            }
+            const ACTIVE_SOUNDS = { }
+
+            function sendDataToScript(endpoint, body) {
+                fetch(`https://${GetParentResourceName()}/${endpoint}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json; charset=UTF-8" },
+                    body: JSON.stringify(body)
+                });
+            }
+
+            function playSound({ soundId, filePath, options }) {
+                soundId = typeof soundId !== "string" ? `${soundId}` : soundId;
+                const existingSound = ACTIVE_SOUNDS?.[soundId];
+
+                if (existingSound !== undefined) {
+                    console.log(`Sound with ID ${soundId} to already exists!`);
+                    return;
+                }
+                
+                const soundOptions = { ...DEFAULT_OPTIONS, ...options }
+                ACTIVE_SOUNDS[soundId] = {
+                    scriptId: soundId,
+                    howl: new Howl({
+                        src: [ filePath ],
+                        onend: () => {
+                            sendDataToScript("soundEnd", { soundId: soundId });
+                            delete ACTIVE_SOUNDS[soundId];
+                        }
+                    }),
+                    fileSrc: filePath,
+                    options
+                }
+
+                if (soundOptions.volume !== undefined) {
+                    ACTIVE_SOUNDS[soundId].howl.volume(soundOptions.volume);
+                }
+
+                if (soundOptions.loop !== undefined) {
+                    ACTIVE_SOUNDS[soundId].howl.loop(soundOptions.loop);
+                }
+
+                if (soundOptions.rate !== undefined) {
+                    ACTIVE_SOUNDS[soundId].howl.rate(soundOptions.rate);
+                }
+
+                ACTIVE_SOUNDS[soundId].howl.play();
+            }
+
+            function updateSound({ soundId, options }) {
+                soundId = typeof soundId !== "string" ? `${soundId}` : soundId;
+                const sound = ACTIVE_SOUNDS?.[soundId];
+
+                if (sound === undefined) {
+                    console.log(`No sound with ID ${soundId} to update!`);
+                    return;
+                }
+                
+                const oldOptions = sound.options;
+                const newOptions = { ...oldOptions, ...options }
+                ACTIVE_SOUNDS[soundId].options = newOptions;
+
+                if (newOptions.volume !== oldOptions.volume) {
+                    ACTIVE_SOUNDS[soundId].howl.volume(newOptions.volume);
+                }
+
+                if (newOptions.loop !== oldOptions.loop) {
+                    ACTIVE_SOUNDS[soundId].howl.loop(newOptions.loop);
+                }
+
+                if (newOptions.rate !== oldOptions.rate) {
+                    ACTIVE_SOUNDS[soundId].howl.rate(newOptions.rate);
+                }
+            }
+
+            function stopSound({ soundId }) {
+                soundId = typeof soundId !== "string" ? `${soundId}` : soundId;
+                const sound = ACTIVE_SOUNDS?.[`${soundId}`];
+
+                if (sound === undefined) {
+                    console.log(`No sound with ID ${soundId} to stop!`);
+                    return;
+                }
+
+                sendDataToScript("soundEnd", { soundId: soundId });
+                ACTIVE_SOUNDS[soundId].howl.stop();
+                delete ACTIVE_SOUNDS[soundId];
+            }
+
+            function pauseSound({ soundId }) {
+                soundId = typeof soundId !== "string" ? `${soundId}` : soundId;
+                const sound = ACTIVE_SOUNDS?.[`${soundId}`];
+
+                if (sound === undefined) {
+                    console.log(`No sound with ID ${soundId} to pause!`);
+                    return;
+                }
+
+                ACTIVE_SOUNDS[soundId].howl.pause();
+            }
+
+            function resumeSound({ soundId }) {
+                soundId = typeof soundId !== "string" ? `${soundId}` : soundId;
+                const sound = ACTIVE_SOUNDS?.[`${soundId}`];
+
+                if (sound === undefined) {
+                    console.log(`No sound with ID ${soundId} to resume!`);
+                    return;
+                }
+
+                ACTIVE_SOUNDS[soundId].howl.play();
+            }
+
+            window.addEventListener("message", function(event) {
+                const item = event.data || event.detail;
+    
+                if (!item || !item.type) return;
+    
+                console.log(item)
+                switch (item.type) {
+                    case "PLAY_SOUND": playSound(item); break;
+                    case "UPDATE_SOUND": updateSound(item); break;
+                    case "STOP_SOUND": stopSound(item); break;
+                    case "PAUSE_SOUND": pauseSound(item); break;
+                    case "RESUME_SOUND": resumeSound(item); break;
+                }
+            });
+        </script>
+    </head>
+</html>
