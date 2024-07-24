@@ -98,7 +98,6 @@ local function OnEventAddSound(id, soundData)
                 clientSounds[soundId].volume = volume
             
             elseif clientData.state == "active" and clientData.volume ~= volume then
-                print(volume)
                 NUI:UpdateSound(soundId, { volume = volume })
                 clientSounds[soundId].volume = volume
             
