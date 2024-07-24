@@ -4,7 +4,7 @@ game "gta5"
 
 author "DevJacob"
 description "A FiveM script to help play audios with ease"
-version "0.1.0"
+version "0.1.1"
 
 ui_page "nui/index.html"
 
