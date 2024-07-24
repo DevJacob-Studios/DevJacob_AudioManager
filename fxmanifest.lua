@@ -14,7 +14,9 @@ dependencies {
 }
 
 files {
-	"nui/index.html"
+	"nui/index.html",
+	"lib/client.lua",
+	"lib/server.lua",
 }
 
 shared_scripts {
@@ -22,17 +24,12 @@ shared_scripts {
 }
 
 client_scripts {
-	"exports.lua",
+	"@DevJacob_CommonLib/lib/client.lua",
 	"client/nui.lua",
 	"client/main.lua",
 }
 
 server_scripts {
-	"exports.lua",
+	"@DevJacob_CommonLib/lib/server.lua",
 	"server/main.lua",
 }
-
---[[
-	Example Import:
-	AudioManager = exports["DevJacob_AudioManager"]:getAudioManagerObject(GetCurrentResourceName())
-]]

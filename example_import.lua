@@ -1,1 +1,0 @@
-AudioManager = exports["DevJacob_AudioManager"]:getAudioManagerObject(GetCurrentResourceName())
