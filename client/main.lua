@@ -35,7 +35,6 @@ local function IsEligibleToHearSound(id, sound)
 
     elseif sound.source == "fromEntity" then
         if sound.handle == nil or sound.radius == nil then
-            print(id, 1)
             return false, nil
         end
 
@@ -53,23 +52,15 @@ local function IsEligibleToHearSound(id, sound)
         local playerPos = GetEntityCoords(PlayerPedId())
         local distanceToRoot = #(root - playerPos)
         if distanceToRoot > sound.radius then
-            print(id, 2, distanceToRoot, root, playerPos)
             return false, nil
         end
 
-        if distanceToRoot <= 3.5 then
-            print(id, 3)
-            return true, sound.data.volume
-        end
-
         local percentAwayFromRoot = distanceToRoot / sound.radius
-        local volume = percentAwayFromRoot * sound.data.volume
+        local volume = 1.0 - (percentAwayFromRoot * sound.data.volume)
 
-        print(id, 4)
         return true, volume
 
     else
-        print(id, 5)
         return false, nil
     end
 end
@@ -88,7 +79,7 @@ local function OnEventAddSound(id, soundData)
     Citizen.CreateThread(function()
         local soundId = id
         while activeSounds[soundId] ~= nil do
-            Citizen.Wait(10)
+            Citizen.Wait(1)
             local sound = activeSounds[soundId]
             if sound == nil then break end
 
@@ -107,6 +98,7 @@ local function OnEventAddSound(id, soundData)
                 clientSounds[soundId].volume = volume
             
             elseif clientData.state == "active" and clientData.volume ~= volume then
+                print(volume)
                 NUI:UpdateSound(soundId, { volume = volume })
                 clientSounds[soundId].volume = volume
             
