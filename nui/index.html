@@ -32,7 +32,7 @@
                     scriptId: soundId,
                     howl: new Howl({
                         src: [ filePath ],
-                        onend: () => {
+                        onstop: () => {
                             sendDataToScript("soundEnd", { soundId: soundId });
                             delete ACTIVE_SOUNDS[soundId];
                         }
